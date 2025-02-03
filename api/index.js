@@ -14,92 +14,71 @@ app.use(bodyParser.urlencoded({extended: false}))//configurando o body-parser
 app.use(bodyParser.json())
 
 app.post("/client", async (req, res) => {
-    let { email, name, password } = req.body
-    
-    if(email !== undefined && email  !== ""){
+    try {
+        const { email, name, password } = req.body;
 
-        let user = await prisma.user.findUnique({
-            where: {
-                email
-            }
-        })
+        if (!email) return res.status(400).json({ error: "Email é obrigatório" });
+        if (!name) return res.status(400).json({ error: "Nome é obrigatório" });
+        if (!password) return res.status(400).json({ error: "Senha é obrigatória" });
 
-        if(user){
-            res.status(406).json({response: "este email já esta cadastrado no sistema"})
-        }
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (existingUser) return res.status(409).json({ error: "Email já cadastrado" });
 
-        if(password != undefined && password != ""){
-            if(name != undefined && name != ""){
-                prisma.user.create({
-                    data: {
-                        email,
-                        name,
-                        password: await bcrypt.hash(password, 13)
-                    }
-                }).then(() => {
-                    res.status(200)
-                    res.json({response: "Usuario criado com sucesso"})
-                }).catch(error => {
-                    res.status(500)
-                    res.json({response: error})
-                })
-            }else{
-                res.status(401)
-                res.json({response: "nome não pode se vazio"})
-            }
-        }else{
-            res.status(401)
-            res.json({response: "senha não pode ser vazio"})
-        }
-    }else{
-        res.status(401)
-        res.json({response: "email não pode ser vazio"})
+        const hashedPassword = await bcrypt.hash(password, 13);
+        const newUser = await prisma.user.create({
+            data: { email, name, password: hashedPassword }
+        });
+
+        res.status(201).json({ id: newUser.id, email: newUser.email, name: newUser.name });
+        
+    } catch (error) {
+        console.error("Erro no cadastro:", error);
+        res.status(500).json({ error: "Erro interno no servidor" });
     }
 })
 
-app.get("/login", async (req, res) => {
-    let { email, password } = req.body
+app.post("/login", async (req, res) => {
+    try {
+        const { email, password } = req.body;
 
-    if(email != undefined && email != ""){
-        if(password != undefined && password != ""){
-            let user
+        if (!email) return res.status(400).json({ error: "Email é obrigatório" });
+        if (!password) return res.status(400).json({ error: "Senha é obrigatória" });
 
-            try{
-                 user = await prisma.user.findUnique({
-                    where : {
-                        email,
-                    }
-                })
-            }catch(error ){
-                 res.status(500)
-                 res.json({response: error})
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) return res.status(401).json({ error: "Credenciais inválidas" });
+
+        const token = await new Promise((resolve, reject) => {
+            jwt.sign(
+                { id: user.id, email: user.email },
+                process.env.SECRET,
+                (error, token) => {
+                    error ? reject(error) : resolve(token);
+                }
+            );
+        });
+
+        res.status(200).json({
+            message: "Login realizado com sucesso",
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name
             }
-            
+        });
 
-            if(bcrypt.compareSync(password, user.password)){
-
-                jwt.sign({id: user.id, email: user.email}, process.env.SECRET, (error, token) => {
-                    if(error){
-                        res.status(400).json({response: "falha ao gerar o token"})
-                    }else{
-                        res.status(200)
-                        res.json({
-                            response: "logado com sucesso",
-                            token,
-                        })
-                    }
-                })
-
-            }else{
-                res.status(406).json({response: "senha incorreta"})
-            }
-        }else{
-            res.status(401)
-            res.json({resonse: "a senha não pode ser vazia"})
+    } catch (error) {
+        console.error("Erro no login:", error);
+        
+        // Tratamento específico para erro de autenticação JWT
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(500).json({ error: "Falha na geração do token" });
         }
-    }else{
-        res.status(401)
-        res.json({response: "o email não pode ser vazio"})
+
+        res.status(500).json({ error: "Erro interno no servidor" });
     }
 })
 
