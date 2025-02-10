@@ -18,10 +18,23 @@ model User{
   name      String    
   email     String        @unique
   password  String
+  salary    Float
   expense   Expenses[]
+  profits   Profits[]
 }
 
 model Expenses{
+  id            Int             @id @default(autoincrement())
+  userId        Int
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  local         String
+  amount        Float
+  data          DateTime
+  payment_end   DateTime
+}
+
+model Profits{
   id        Int             @id @default(autoincrement())
   userId    Int
   user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
