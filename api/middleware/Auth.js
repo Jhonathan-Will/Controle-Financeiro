@@ -15,7 +15,6 @@ function auth(req, res, next){
             }else{
                 req.token = token
                 req.loggedUser = { id: data.id, email: data.email}
-                console.log(data)
                 next();
             }
         })

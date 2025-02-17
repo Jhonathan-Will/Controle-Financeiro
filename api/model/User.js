@@ -5,16 +5,17 @@ const bcrypt = require('bcrypt')//chamando bcrypt
 //querys do banco de dados para o usuário
 class User{
     //criar usuário no banco de dados
-    async create(email, name, password){
+    async create(email, name, password, salary){
         try {
             let user = await this.findByEmail(email)
 
-            if(user){
+            if(!user){
                let newUser = await prisma.user.create({
                     data: {
                         email,
                         name,
-                        password: bcrypt.hashSync(password, 13)
+                        password: bcrypt.hashSync(password, 13),
+                        salary: parseFloat(salary)
                     }
                 })
 

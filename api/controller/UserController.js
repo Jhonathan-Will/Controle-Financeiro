@@ -7,13 +7,13 @@ class UserController{
     //criar usuáio
     async create(req, res){
         try {
-            const { email, name, password } = req.body;
+            const { email, name, password, salary } = req.body;
     
             if (!email) return res.status(400).json({ error: "Email é obrigatório" });
             if (!name) return res.status(400).json({ error: "Nome é obrigatório" });
             if (!password) return res.status(400).json({ error: "Senha é obrigatória" });
-
-            const user = await User.create(email, name, password)
+            if (!salary) salary = 0;
+            const user = await User.create(email, name, password, salary)
 
 
             if(!user){res.status(400).json({response: "Usuário já cadastrado"})}

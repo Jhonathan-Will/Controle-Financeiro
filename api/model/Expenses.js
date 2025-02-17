@@ -6,13 +6,15 @@ class Expenses{
         try {
             let newExpense = await prisma.expenses.create({
                 data: {
-                    user_id,
+                    user: {
+                      connect: { id: user_id } // Conecta a despesa ao usuário existente
+                    },
                     name,
                     local,
                     amount,
                     data,
                     payment_end
-                }
+                  }
             })
 
             return newExpense
