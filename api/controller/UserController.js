@@ -1,24 +1,17 @@
-
-const jwt = require('jsonwebtoken')// chamando o jwt
-const User = require('../model/User')//chamando o model User
+const UserService = require('../service/UserService')//chamando o service User
 
 class UserController{
 
     //criar usuáio
     async create(req, res){
         try {
-            const { email, name, password, salary } = req.body;
-    
-            if (!email) return res.status(400).json({ error: "Email é obrigatório" });
-            if (!name) return res.status(400).json({ error: "Nome é obrigatório" });
-            if (!password) return res.status(400).json({ error: "Senha é obrigatória" });
-            if (!salary) salary = 0;
-            const user = await User.create(email, name, password, salary)
-
+            
+            const user = await UserService.create(req.body)
 
             if(!user){res.status(400).json({response: "Usuário já cadastrado"})}
     
             res.status(201).json({response: "Usuário cadastrado com sucesso",
+                                error : "",
                                 user: {
                                     email: user.email, name: user.name 
                                 }
@@ -29,50 +22,17 @@ class UserController{
             res.status(500).json({ error: "Erro interno no servidor" });
         }
     }
+
     //login de usuário
     async login(req, res){
         try {
-            const { email, password } = req.body;
-    
-            if (!email) return res.status(400).json({ error: "Email é obrigatório" });
-            if (!password) return res.status(400).json({ error: "Senha é obrigatória" });
-    
-            const user = await User.findByEmail(email);
+            let response = await UserService.login(req.body)
 
-            if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
-    
-            const passwordMatch = await User.passwordMatch(password, user.password)
-            if (!passwordMatch) return res.status(401).json({ error: "Credenciais inválidas" });
-    
-            const token = await new Promise((resolve, reject) => {
-                jwt.sign(
-                    { id: user.id, email: user.email },
-                    process.env.SECRET,
-                    (error, token) => {
-                        error ? reject(error) : resolve(token);
-                    }
-                );
-            });
-    
-            res.status(200).json({
-                response: "Login realizado com sucesso",
-                token,
-                user: {
-                    id: user.id,
-                    email: user.email,
-                    name: user.name
-                }
-            });
-    
+            return res.status(response.status).json(response.message)
         } catch (error) {
-            console.error("Erro no login:", error);
-            
-            // Tratamento específico para erro de autenticação JWT
-            if (error.name === 'JsonWebTokenError') {
-                return res.status(500).json({ error: "Falha na geração do token" });
-            }
-    
-            res.status(500).json({ error: "Erro interno no servidor" });
+            console.log("Aconteceu um erro: ", error)
+
+            return  res.status(500).json({response: "", error: "Erro interno do serviço"})
         }
     }
 

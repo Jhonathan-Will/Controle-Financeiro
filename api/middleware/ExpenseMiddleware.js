@@ -1,19 +1,25 @@
 const joi = require("joi")
 
-const schema =  joi.object({
-    name: joi.string().required(),
-    local: joi.string().required(),
-    amount: joi.number().required(),
-    data: joi.date().required(),
-    payment_end: joi.date().required()
-})
+const ExpenseSchema =  {
+   create: joi.object({
+            name: joi.string().required(),
+            local: joi.string().required(),
+            amount: joi.number().required(),
+            data: joi.date().required(),
+            payment_end: joi.date().required()
+            })
+}
 
-module.exports = async (req, res, next) => {
+const validate = (schema) => async(req, res, next) => {
     try{
         await schema.validateAsync(req.body)
-        next()
+        next();
     }catch(error){
-        console.error("Erro na validação", error)
-        res.status(400).json({response: "", error})
+        console.log("Erro de  validação", error)
+        res.status(400).json({response: "",  error})
     }
+}
+
+module.exports = {
+    CreateValidate : validate(ExpenseSchema.create)
 }

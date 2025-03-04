@@ -5,15 +5,15 @@ const bcrypt = require('bcrypt')//chamando bcrypt
 //querys do banco de dados para o usuário
 class User{
     //criar usuário no banco de dados
-    async create(email, name, password, salary){
+    async create(name, email, password, salary){
         try {
             let user = await this.findByEmail(email)
 
             if(!user){
                let newUser = await prisma.user.create({
                     data: {
-                        email,
                         name,
+                        email,
                         password: bcrypt.hashSync(password, 13),
                         salary: parseFloat(salary)
                     }
@@ -33,13 +33,14 @@ class User{
     }
 
     //buscar usuário por email no banco de dados
-    async findByEmail(email){       
+    async findByEmail(email){   
+        console.log(email)    
         try {
             let user = await prisma.user.findUnique({ where: {email}})
             return user
         } catch (error) {
             console.log(error)
-            return false
+            return undefined
         }
     }
 

@@ -64,6 +64,26 @@ class Expenses{
         }
     }
 
+    async getAll(user_id){
+        try {
+            let expenses = await prisma.expenses.findMany({where:  {userId : user_id}})
+            return expenses;
+        } catch (error) {
+            console.log("erro model expenses: "+ error);
+            return undefined
+        }
+    }
+
+    async getOne(user_id, expense_id){
+        try {
+            let expense = await prisma.expenses.findUnique({where: {userId: user_id, id: expense_id}})
+            return expense
+        } catch (error) {
+            console.log("erro model expenses: "+ error);
+            return undefined
+        }
+    }
+
 }
 
 module.exports = new Expenses()
