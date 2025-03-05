@@ -42,7 +42,29 @@ class ExpensesController{
         }
     }
 
+    async delete(req, res){
+        try {
+            const response = await ExpenseService.delete(req.loggedUser.id, req.params.id)
 
+            if(response.status = 200) return res.status(201).json({response : response.message.response, data: response.message.expenses, error: response.message.error})
+            if(response.status == 500) return res.status(500).json({response : response.message.response, error: response.message.error})
+        } catch (error) {
+            console.log("error: "+ error)
+            res.status(500).json("error interno no servido")
+        }
+    }
+
+    async update(req, res){
+        try {
+            const response = await ExpenseService.update(req.loggedUser.id, req.params.id, req.body)
+
+            if(response.status = 200) return res.status(201).json({response : response.message.response, data: response.message.expenses, error: response.message.error})
+            if(response.status == 500) return res.status(500).json({response : response.message.response, error: response.message.error})
+        } catch (error) {
+            console.log("error: "+ error)
+            res.status(500).json("error interno no servido")
+        }
+    }
 }
 
 module.exports = new ExpensesController()

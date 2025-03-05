@@ -84,6 +84,47 @@ class Expenses{
         }
     }
 
+    async delete(user_id, expense_id){
+        try {
+            let expense = await prisma.expenses.delete({
+                where: {
+                    userId: user_id,
+                    id: expense_id
+                }
+            })
+
+            return expense
+        } catch (error) {
+            console.log("erro model expenses: "+ error);
+            return undefined
+        }
+    }
+
+    async update(user_id, id_expense, name, local, amount, data, payment_end){
+        try {
+            let expense = prisma.expenses.update({where: {
+                    userId: user_id,
+                    id: id_expense
+                },
+                data: {
+                    user: {
+                        connect: { id: user_id } // Conecta a despesa ao usuário existente
+                      },
+                      name,
+                      local,
+                      amount,
+                      data,
+                      payment_end
+                }
+            })
+
+            return expense;
+        } catch (error) {
+            console.log("erro model expenses: "+ error);
+            return undefined
+        }
+    }
+
 }
 
 module.exports = new Expenses()

@@ -48,6 +48,46 @@ class ExpensesService{
             }}
         }
     }
+
+    async delete(user_id, id_expense){
+        try {
+            let expense = await Expenses.delete(user_id, parseInt(id_expense))
+            
+            if(expense){
+                return { status: 200, message: {
+                    response: "Despese "+id_expense+" deletada com sucesso",
+                    expense,
+                    error: ""
+                }}
+            }
+        } catch (error) {
+            console.log("Error: "+error);
+            return {status: 500, message: {
+                response: "",
+                error
+            }}
+        }
+    }
+
+    async update(user_id, id_expense, { name, local, amount, data, payment_end}){
+        try{
+            const expense = await Expenses.update(user_id, parseInt(id_expense), name, local, amount, new Date(data), new Date(payment_end))
+
+            if(expense){
+                return { status: 200, message: {
+                    response: "Despese "+id_expense+" alterada com sucesso",
+                    expense,
+                    error: ""
+                }}
+            }
+        }catch(error) {
+            console.log("Error: "+error);
+            return {status: 500, message: {
+                response: "",
+                error
+            }}
+        }
+    }
 }
 
 module.exports = new ExpensesService()

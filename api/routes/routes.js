@@ -14,5 +14,7 @@ router.post("/login", LoginValidate, UserController.login)
 //Despesas
 router.post("/expenses", Auth, CreateValidate, ExpensesController.create)
 router.get("/expenses", Auth, ExpensesController.getAll)
-router.get("/expenses/:id", Auth, ExpensesController.getONe)
+router.get("/expenses/:id", Auth, ExpensesController.getOne)
+router.delete("/expenses/:id", Auth, ExpensesController.delete)
+router.put("/expenses/:id", Auth, ExpensesController.update)
 module.exports = router
